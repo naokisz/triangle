@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	int layer = -1, number = -1, goal = -1, step = -1;
+	int layer = -1, number, start = -1, goal = -1, step = -1;
 	int try_times = -1, pow_tmp, rand_tmp, reached_times = 0;
 	int i, j, k;
 	double probability = 0;
@@ -44,15 +44,16 @@ int main(int argc, char *argv[]) {
 	for(;;) {
 		printf("スタートする番号を入力してください。");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
-		scanf("%d", &number);
+		scanf("%d", &start);
 		while(getchar() != '\n') { }
 
-		if(number == 0) {
-			number = (int)(((double)rand() / RAND_MAX) * pow(layer, 2)) + 1;
-			printf("%d\n", number);
+		if(start == 0) {
+			start = (int)(((double)rand() / RAND_MAX) * pow(layer, 2)) + 1;
+			printf("%d\n", start);
 		}
 
-		if(number > -1) break;
+		number = start;
+		if(start > -1) break;
 
 		printf("もう一度入力してください。\n");
 	}
@@ -105,6 +106,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	for(i = 0; i < try_times; i++) {
+
+		number = start;
+
 		for(j = 0; j < step; j++) {
 
 			/*三角形の頂点にいたら、決まった場所に移動する。*/
@@ -136,7 +140,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			else if(number == (pow(layer - 1, 2) + 1)) {
-				number = pow(layer - 1, 2) + 1;
+				number = pow(layer - 1, 2) + 2;
 				goto continue_step;
 			}
 
@@ -240,11 +244,9 @@ int main(int argc, char *argv[]) {
 			printf("ゴールに到達しました。\n");
 		}
 
-		if(probability != 0) {
-			probability = (double)reached_times / try_times;
-		}
-		printf("試行回数：%d回 ゴールに到達した回数：%d回 確率：%lf\n"
-			,try_times, reached_times, probability);
+		probability = (double)reached_times / (double)i;
+		printf("試行回数：%d回 ゴールに到達した回数：%d回 確率：%.15lf\n"
+			, i + 1, reached_times, probability);
 	}
 
 	printf("試行が終了しました。\n");
