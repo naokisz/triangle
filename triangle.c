@@ -12,19 +12,42 @@ int main(int argc, char *argv[]) {
 		printf("このプログラムについて\n");
 		printf("（確か）東大のある入試問題をパソコンで解こうとしてみただけです。\n\n");
 		printf("オプション\n");
-		printf("--help：このヘルプを表示します。\n\n");
+		printf("--help：このヘルプを表示します。\n");
+		printf("-l, --layer：何層の三角形か指定する。\n");
+		printf("-s, --start：スタートする番号を指定する。\n");
+		printf("-g, --goal：ゴールする番号を指定する。\n");
+		printf("-sp, --step：1回でどのくらい動くのか指定する。\n");
+		printf("-t, --times：何回動かすのか指定する。\n");
+		printf("--show-number：動いた場所の数字を表示する。\n");
 
 		return 0;
 	}
 
 	int layer = -1, number, start = -1, goal = -1, step = -1;
 	int try_times = -1, pow_tmp, rand_tmp, reached_times = 0;
-	int i, j, k;
+	int i, j, k, show_number = 0;
 	double probability = 0;
 
 	srand(time(NULL));
 
+	for(i = 1; i < argc; i++) {
+		if(strcmp(argv[i], "--show-number") == 0) {
+			show_number = 1;
+			break;
+		}
+	}
+
 	for(;;) {
+
+		for(i = 1; i < argc; i++) {
+			if(strcmp(argv[i], "-l") == 0
+				|| strcmp(argv[i], "--layer") == 0) {
+
+				layer = atoi(argv[i + 1]);
+				goto finish_layer;
+			}
+		}
+
 		printf("何層の三角形を積んだ三角形にしますか？");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
 		scanf("%d", &layer);
@@ -41,7 +64,28 @@ int main(int argc, char *argv[]) {
 		printf("もう一度入力してください。\n");
 	}
 
+	finish_layer:
+
 	for(;;) {
+
+		for(i = 1; i < argc; i++) {
+			if(strcmp(argv[i], "-s") == 0 ||
+				strcmp(argv[i], "--start") == 0) {
+
+				start = atoi(argv[i + 1]);
+				if(start <= pow(layer, 2) && start >= 1) {
+					number = start;
+					goto finish_start;
+				} else {
+					printf("引数エラー：start ");
+					printf("有効な数字を入力してください。\n");
+					goto error_start;
+				}
+			}
+		}
+				
+		error_start:
+
 		printf("スタートする番号を入力してください。");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
 		scanf("%d", &start);
@@ -52,13 +96,32 @@ int main(int argc, char *argv[]) {
 			printf("%d\n", start);
 		}
 
-		number = start;
-		if(start > -1) break;
+		if(start > -1 && start <= pow(layer, 2)) break;
 
 		printf("もう一度入力してください。\n");
 	}
 
+	finish_start:
+
 	for(;;) {
+
+		for(i = 1; i < argc; i++) {
+			if(strcmp(argv[i], "-g") == 0 || 
+				strcmp(argv[i], "--goal") == 0) {
+
+				goal = atoi(argv[i + 1]);
+				if(goal <= pow(layer, 2) && goal >= 1)
+					goto finish_goal;
+				else  {
+					printf("引数エラー：goal ");
+					printf("有効な数字を入力してください。\n");
+					goto error_goal;
+				}
+			}
+		}
+
+		error_goal:
+
 		printf("ゴールの番号を入力してください。");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
 		scanf("%d", &goal);
@@ -69,12 +132,24 @@ int main(int argc, char *argv[]) {
 			printf("%d\n", goal);
 		}
 
-		if(goal > -1) break;
+		if(goal > -1 && goal <= pow(layer, 2)) break;
 
 		printf("もう一度入力してください。\n");
 	}
 
+	finish_goal:
+
 	for(;;) {
+
+		for(i = 1; i < argc; i++) {
+			if(strcmp(argv[i], "-sp") == 0
+				|| strcmp(argv[i], "--step") == 0) {
+
+				step = atoi(argv[i + 1]);
+				goto finish_step;
+			}
+		}
+
 		printf("一回で何ステップ動かしますか？");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
 		scanf("%d", &step);
@@ -85,12 +160,25 @@ int main(int argc, char *argv[]) {
 			printf("%dステップ\n", step);
 		}
 
+
 		if(step > -1) break;
 
 		printf("もう一度入力してください。\n");
 	}
 
+	finish_step:
+
 	for(;;) {
+
+		for(i = 1; i < argc; i++) {
+			if(strcmp(argv[i], "-t") == 0
+				|| strcmp(argv[i], "--times") == 0) {
+
+				try_times = atoi(argv[i + 1]);
+				goto finish_times;
+			}
+		}
+
 		printf("何回実行しますか？");
 		printf("ランダムに決めても良い場合は０を入力してください。＞");
 		scanf("%d", &try_times);
@@ -105,6 +193,8 @@ int main(int argc, char *argv[]) {
 		printf("もう一度入力してください。\n");
 	}
 
+	finish_times:
+
 	for(i = 0; i < try_times; i++) {
 
 		number = start;
@@ -112,13 +202,23 @@ int main(int argc, char *argv[]) {
 		for(j = 0; j < step; j++) {
 
 			/*三角形の頂点にいたら、決まった場所に移動する。*/
-			if(number == 1) {
+			if(layer == 1 && number == 1) goto continue_step;
+			else if(number == 1) {
 				number = 3;
 				goto continue_step;
 			}
+			else if(layer == 2 && number == 4) {
+				number--;
+				goto continue_step;
+			}
+
 
 			/*1の時の処理をforで回さないと
 				2の時の処理が出来ないのでここに書く*/
+			if(layer == 2 && number == 2) {
+				number++;
+				goto continue_step;
+			}
 			else if(number == 2) {
 
 				rand_tmp = rand() % 2;
@@ -236,20 +336,27 @@ int main(int argc, char *argv[]) {
 			}
 
 			continue_step:
+			if(show_number) printf("%d\n", number);
 			continue;
 		}
 
 		if(number == goal) {
 			reached_times++;
-			printf("ゴールに到達しました。\n");
+			if(!show_number) {
+				printf("ゴールに到達しました。\n");
+			}
 		}
 
 		probability = (double)reached_times / (double)i;
-		printf("試行回数：%d回 ゴールに到達した回数：%d回 確率：%.15lf\n"
-			, i + 1, reached_times, probability);
+		if(!show_number) {
+			printf("試行回数：%d回 ゴールに到達した回数：%d回 確率：%.15lf\n"
+				, i + 1, reached_times, probability);
+		}
 	}
 
-	printf("試行が終了しました。\n");
+	if(!show_number) {
+		printf("試行が終了しました。\n");
+	}
 
 	return 0;
 }
